@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "LinkedIn as a Productivity Tool",
+  "icons": {
+    "48": "icon48.png"
+  },
+  "version": "1.0",
+  "description": "Transform LinkedIn's suggested content into productivity tools. Replace unwanted posts with todos and inspirational quotes.",
+  "permissions": ["activeTab", "storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.linkedin.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
