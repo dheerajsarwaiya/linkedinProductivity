@@ -1,176 +1,295 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
+    <meta charset="UTF-8" />
     <style>
-        body {
-            width: 400px;
-            padding: 15px;
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto;
-            margin: 0;
-        }
-        .tabs {
-            display: flex;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            gap: 8px;
-        }
-        .tab {
-            padding: 8px 16px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 14px;
-            color: #666;
-            white-space: nowrap;
-        }
-        .tab.active {
-            color: #0a66c2;
-            border-bottom: 2px solid #0a66c2;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        textarea {
-            width: 100%;
-            height: 150px;
-            margin: 10px 0;
-            padding: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        .todo-input {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        .todo-input input {
-            flex-grow: 1;
-            padding: 8px;
-            font-size: 14px;
-        }
-        .todo-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .todo-item {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .todo-item input[type="checkbox"] {
-            margin-right: 8px;
-        }
-        .todo-item.completed span {
-            text-decoration: line-through;
-            color: #888;
-        }
-        .delete-btn {
-            margin-left: auto;
-            color: #666;
-            border: none;
-            background: #f0f0f0;
-            cursor: pointer;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 16px;
-            line-height: 1;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 24px;
-            min-height: 24px;
-        }
-        .delete-btn:hover {
-            color: white;
-            background: #dc3545;
-            transform: scale(1.05);
-        }
-        .save-btn {
-            background-color: #0a66c2;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .save-btn:hover {
-            background-color: #004182;
-        }
-        .skip-word {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            background: #f5f5f5;
-            border-radius: 4px;
-            margin-bottom: 4px;
-        }
-        .skip-word span {
-            flex-grow: 1;
-        }
-        .info-text {
-            font-size: 12px;
-            color: #666;
-            margin: 8px 0;
-        }
-        .sync-info {
-            background-color: #e8f3ff;
-            color: #0a66c2;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin: 12px 0;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-        }
+      body {
+        width: 400px;
+        padding: 15px;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
+          Roboto;
+        margin: 0;
+      }
+      .tabs {
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e0e0e0;
+        gap: 8px;
+        position: sticky;
+        top: 0;
+        background: white;
+        padding: 0 0 1px 0;
+      }
+      .tab {
+        padding: 8px 16px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-size: 14px;
+        color: #666;
+        white-space: nowrap;
+        position: relative;
+      }
+      .tab.active {
+        color: #0a66c2;
+      }
+      .tab.active::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #0a66c2;
+      }
+      .tab-content {
+        display: none;
+        padding: 15px 0;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      textarea {
+        width: 100%;
+        height: 150px;
+        margin: 10px 0;
+        padding: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        resize: vertical;
+      }
+      .todo-input {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .todo-input input {
+        flex-grow: 1;
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .todo-list {
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .todo-item {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+        background: white;
+      }
+      .todo-item input[type="checkbox"] {
+        margin-right: 8px;
+      }
+      .todo-item.completed span {
+        text-decoration: line-through;
+        color: #888;
+      }
+      .delete-btn {
+        margin-left: auto;
+        color: #666;
+        border: none;
+        background: #f0f0f0;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 16px;
+        line-height: 1;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        min-height: 24px;
+      }
+      .delete-btn:hover {
+        color: white;
+        background: #dc3545;
+        transform: scale(1.05);
+      }
+      .save-btn {
+        background-color: #0a66c2;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+      .save-btn:hover {
+        background-color: #004182;
+      }
+      .skip-word {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        margin-bottom: 4px;
+      }
+      .skip-word span {
+        flex-grow: 1;
+      }
+      .info-text {
+        font-size: 12px;
+        color: #666;
+        margin: 8px 0;
+      }
+      .sync-info {
+        background-color: #e8f3ff;
+        color: #0a66c2;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin: 12px 0;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+      }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 64px;
+        height: 24px;
+        margin-right: 10px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #0a66c2;
+      }
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+      .setting-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        background: white;
+      }
+      .setting-item-content {
+        flex-grow: 1;
+      }
+      .setting-item-title {
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .setting-item-description {
+        font-size: 12px;
+        color: #666;
+      }
+      h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #1a1a1a;
+        font-size: 16px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="tabs">
-        <button class="tab active" data-tab="todos">Todo List</button>
-        <button class="tab" data-tab="quotes">Quotes</button>
-        <button class="tab" data-tab="skip-words">Skip Words</button>
+      <button class="tab active" data-tab="todos">Todo List</button>
+      <button class="tab" data-tab="quotes">Quotes</button>
+      <button class="tab" data-tab="skip-words">Skip Words</button>
+      <button class="tab" data-tab="settings">Settings</button>
     </div>
 
     <div class="sync-info">
-        [Sync] Your data syncs across devices when signed into Chrome
+      [Sync] Your data syncs across devices when signed into Chrome
     </div>
 
     <div id="todos-tab" class="tab-content active">
-        <h3>Todo List</h3>
-        <div class="todo-input">
-            <input type="text" id="new-todo" placeholder="Add a new todo">
-            <button class="save-btn" id="add-todo">Add</button>
-        </div>
-        <div class="todo-list" id="todo-list">
-            <!-- Todos will be inserted here -->
-        </div>
+      <h3>Todo List</h3>
+      <div class="todo-input">
+        <input type="text" id="new-todo" placeholder="Add a new todo" />
+        <button class="save-btn" id="add-todo">Add</button>
+      </div>
+      <div class="todo-list" id="todo-list">
+        <!-- Todos will be inserted here -->
+      </div>
     </div>
 
     <div id="quotes-tab" class="tab-content">
-        <h3>Manage Your Quotes</h3>
-        <div>Add one quote per line:</div>
-        <textarea id="quotes"></textarea>
-        <button class="save-btn" id="save-quotes">Save Quotes</button>
+      <h3>Manage Your Quotes</h3>
+      <div>Add one quote per line:</div>
+      <textarea id="quotes"></textarea>
+      <button class="save-btn" id="save-quotes">Save Quotes</button>
     </div>
 
     <div id="skip-words-tab" class="tab-content">
-        <h3>Skip Words</h3>
-        <div class="info-text">Posts containing these words will not be replaced with quotes/todos</div>
-        <div class="todo-input">
-            <input type="text" id="new-skip-word" placeholder="Add a new word to skip">
-            <button class="save-btn" id="add-skip-word">Add</button>
-        </div>
-        <div id="skip-words-list">
-            <!-- Skip words will be inserted here -->
-        </div>
+      <h3>Skip Words</h3>
+      <div class="info-text">
+        Posts containing these words will not be replaced with quotes/todos
+      </div>
+      <div class="todo-input">
+        <input
+          type="text"
+          id="new-skip-word"
+          placeholder="Add a new word to skip"
+        />
+        <button class="save-btn" id="add-skip-word">Add</button>
+      </div>
+      <div id="skip-words-list">
+        <!-- Skip words will be inserted here -->
+      </div>
     </div>
 
+    <div id="settings-tab" class="tab-content">
+      <h3>Settings</h3>
+      <div class="setting-item">
+        <div class="setting-item-content">
+          <div class="setting-item-title">Enable Content Replacement</div>
+          <div class="setting-item-description">
+            Toggle to enable/disable LinkedIn content replacement with quotes
+            and todos
+          </div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="contentToggle" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Load modules in order -->
+    <script src="modules/storage.js"></script>
+    <script src="modules/tabManager.js"></script>
+    <script src="modules/settings.js"></script>
+    <script src="modules/quotes.js"></script>
+    <script src="modules/todos.js"></script>
+    <script src="modules/skipWords.js"></script>
     <script src="popup.js"></script>
-</body>
+  </body>
 </html>

@@ -6,7 +6,8 @@
   },
   "version": "1.0",
   "description": "Transform LinkedIn's suggested content into productivity tools. Replace unwanted posts with todos and inspirational quotes.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "tabs"],
+  "host_permissions": ["*://*.linkedin.com/*"],
   "action": {
     "default_popup": "popup.html"
   },
@@ -15,5 +16,14 @@
       "matches": ["*://*.linkedin.com/*"],
       "js": ["content.js"]
     }
-  ]
+  ],
+  "web_accessible_resources": [{
+    "resources": [
+      "modules/*.js"
+    ],
+    "matches": ["<all_urls>"]
+  }],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }

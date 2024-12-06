@@ -14,6 +14,7 @@ let availableQuotes = [...defaultQuotes];
 let todos = [];
 let skipWords = [...defaultSkipWords];
 let contentCounter = 0;
+let enabled = true; // Track enabled state
 
 // Generate unique ID
 function generateId() {
@@ -22,10 +23,18 @@ function generateId() {
 
 // Storage management
 function loadContent() {
-    chrome.storage.sync.get(['userQuotes', 'todos', 'skipWords'], (result) => {
+    chrome.storage.sync.get(['userQuotes', 'todos', 'skipWords', 'enabled'], (result) => {
         availableQuotes = result.userQuotes || defaultQuotes;
         todos = result.todos || [];
         skipWords = result.skipWords || defaultSkipWords;
+        enabled = result.enabled === undefined ? true : result.enabled;
+        
+        // Initial content processing based on enabled state
+        if (enabled) {
+            processUnwantedContent();
+        } else {
+            restoreOriginalContent();
+        }
     });
 }
 
@@ -37,7 +46,31 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         if (changes.userQuotes) availableQuotes = changes.userQuotes.newValue || defaultQuotes;
         if (changes.todos) todos = changes.todos.newValue || [];
         if (changes.skipWords) skipWords = changes.skipWords.newValue || defaultSkipWords;
+        if (changes.enabled !== undefined) {
+            enabled = changes.enabled.newValue;
+            if (enabled) {
+                processUnwantedContent();
+            } else {
+                restoreOriginalContent();
+            }
+        }
     }
+});
+
+// Listen for messages from popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'toggleContent') {
+        enabled = request.enabled;
+        if (enabled) {
+            processUnwantedContent();
+        } else {
+            restoreOriginalContent();
+        }
+        // Always send a response
+        sendResponse({ success: true });
+    }
+    // Return true to indicate we'll send a response asynchronously
+    return true;
 });
 
 // UI Update Functions
@@ -205,6 +238,23 @@ function shouldReplaceContent(text) {
     return unwantedWords.some(word => lowerText.includes(word));
 }
 
+// Store original content for restoration
+const originalContent = new WeakMap();
+
+function storeOriginalContent(element, replacement) {
+    const clone = element.cloneNode(true);
+    originalContent.set(replacement, clone);
+}
+
+function restoreOriginalContent() {
+    document.querySelectorAll('[data-cleaned="true"]').forEach(element => {
+        const original = originalContent.get(element);
+        if (original) {
+            element.parentNode.replaceChild(original, element);
+        }
+    });
+}
+
 function createContentElement() {
     const element = document.createElement('div');
     element.style.cssText = `
@@ -313,6 +363,8 @@ function createContentElement() {
 }
 
 function processUnwantedContent() {
+    if (!enabled) return;
+
     try {
         const selectors = [
             '.feed-shared-update-v2',
@@ -331,6 +383,7 @@ function processUnwantedContent() {
                 
                 if (shouldReplaceContent(textContent)) {
                     const contentElement = createContentElement();
+                    storeOriginalContent(element, contentElement);
                     element.parentNode.insertBefore(contentElement, element);
                     element.remove();
                     contentElement.setAttribute('data-cleaned', 'true');
@@ -344,7 +397,13 @@ function processUnwantedContent() {
 
 function initializeContentProcessor() {
     try {
-        setTimeout(processUnwantedContent, 1000);
+        // Load initial state and process content accordingly
+        chrome.storage.sync.get(['enabled'], (result) => {
+            enabled = result.enabled === undefined ? true : result.enabled;
+            if (enabled) {
+                setTimeout(processUnwantedContent, 1000);
+            }
+        });
 
         const observer = new MutationObserver((mutations) => {
             if (mutations.some(mutation => mutation.addedNodes.length > 0)) {
