@@ -118,23 +118,35 @@
             color: #666;
             margin: 8px 0;
         }
+        .sync-info {
+            background-color: #e8f3ff;
+            color: #0a66c2;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 12px 0;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sync-info:before {
+            content: "↻";
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="tabs">
-        <button class="tab active" data-tab="quotes">Quotes</button>
-        <button class="tab" data-tab="todos">Todo List</button>
+        <button class="tab active" data-tab="todos">Todo List</button>
+        <button class="tab" data-tab="quotes">Quotes</button>
         <button class="tab" data-tab="skip-words">Skip Words</button>
     </div>
 
-    <div id="quotes-tab" class="tab-content active">
-        <h3>Manage Your Quotes</h3>
-        <div>Add one quote per line:</div>
-        <textarea id="quotes"></textarea>
-        <button class="save-btn" id="save-quotes">Save Quotes</button>
+    <div class="sync-info">
+        Your data syncs across devices when signed into Chrome
     </div>
 
-    <div id="todos-tab" class="tab-content">
+    <div id="todos-tab" class="tab-content active">
         <h3>Todo List</h3>
         <div class="todo-input">
             <input type="text" id="new-todo" placeholder="Add a new todo">
@@ -143,6 +155,13 @@
         <div class="todo-list" id="todo-list">
             <!-- Todos will be inserted here -->
         </div>
+    </div>
+
+    <div id="quotes-tab" class="tab-content">
+        <h3>Manage Your Quotes</h3>
+        <div>Add one quote per line:</div>
+        <textarea id="quotes"></textarea>
+        <button class="save-btn" id="save-quotes">Save Quotes</button>
     </div>
 
     <div id="skip-words-tab" class="tab-content">
