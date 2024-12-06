@@ -26,25 +26,38 @@ window.todosManager = {
         this.todos.forEach((todo, index) => {
             const todoItem = document.createElement('div');
             todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+            todoItem.style.display = 'flex';
+            todoItem.style.alignItems = 'center';
+            todoItem.style.padding = '8px';
+            todoItem.style.borderBottom = '1px solid #eee';
             
             todoItem.innerHTML = `
-                <div style="display: flex; align-items: center; width: 100%;">
+                <div style="display: flex; align-items: center; width: 100%; gap: 10px;">
                     <span style="min-width: 30px; font-weight: bold;">#${index + 1}</span>
-                    <input type="checkbox" ${todo.completed ? 'checked' : ''} style="margin-right: 8px;">
-                    <span style="${todo.completed ? 'text-decoration: line-through; color: #888;' : ''}">${todo.text}</span>
-                    <button class="delete-btn">Delete</button>
+                    <input 
+                        type="checkbox" 
+                        ${todo.completed ? 'checked' : ''} 
+                        style="margin: 0; cursor: pointer; width: 18px; height: 18px;"
+                    >
+                    <span style="flex-grow: 1; ${todo.completed ? 'text-decoration: line-through; color: #888;' : ''}">${todo.text}</span>
+                    <button 
+                        class="delete-btn" 
+                        style="background: #ff4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;"
+                    >Delete</button>
                 </div>
             `;
             
             // Toggle completion
-            todoItem.querySelector('input').addEventListener('change', (e) => {
-                this.handleTodoClick(todo.id, e.target);
+            const checkbox = todoItem.querySelector('input[type="checkbox"]');
+            checkbox.addEventListener('change', async (e) => {
+                todo.completed = e.target.checked;
+                await this.saveTodos();
             });
             
             // Delete todo
-            todoItem.querySelector('.delete-btn').addEventListener('click', () => {
-                this.todos.splice(index, 1);
-                this.saveTodos();
+            const deleteBtn = todoItem.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', async () => {
+                await this.deleteTodo(todo.id);
             });
             
             todoList.appendChild(todoItem);
