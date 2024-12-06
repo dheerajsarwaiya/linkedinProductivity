@@ -23,56 +23,78 @@ function generateId() {
 
 // Storage management
 function loadContent() {
-  chrome.storage.sync.get(
-    ["userQuotes", "todos", "skipWords", "enabled"],
-    (result) => {
-      availableQuotes = result.userQuotes || defaultQuotes;
-      todos = result.todos || [];
-      skipWords = result.skipWords || defaultSkipWords;
-      enabled = result.enabled === undefined ? true : result.enabled;
+  try {
+    chrome.storage.sync.get(
+      ["userQuotes", "todos", "skipWords", "enabled"],
+      (result) => {
+        if (chrome.runtime.lastError) {
+          console.log("Error loading content:", chrome.runtime.lastError);
+          return;
+        }
+        availableQuotes = result.userQuotes || defaultQuotes;
+        todos = result.todos || [];
+        skipWords = result.skipWords || defaultSkipWords;
+        enabled = result.enabled === undefined ? true : result.enabled;
 
-      // Initial content processing based on enabled state
-      if (enabled) {
-        processUnwantedContent();
-      } else {
-        restoreOriginalContent();
+        // Initial content processing based on enabled state
+        if (enabled) {
+          processUnwantedContent();
+        } else {
+          restoreOriginalContent();
+        }
       }
-    }
-  );
+    );
+  } catch (error) {
+    console.log("Error in loadContent:", error);
+    // Use default values if storage access fails
+    availableQuotes = defaultQuotes;
+    todos = [];
+    skipWords = defaultSkipWords;
+    enabled = true;
+  }
 }
 
 loadContent();
 
 // Listen for storage changes
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  if (namespace === "sync") {
-    if (changes.userQuotes)
-      availableQuotes = changes.userQuotes.newValue || defaultQuotes;
-    if (changes.todos) todos = changes.todos.newValue || [];
-    if (changes.skipWords)
-      skipWords = changes.skipWords.newValue || defaultSkipWords;
-    if (changes.enabled !== undefined) {
-      enabled = changes.enabled.newValue;
-      if (enabled) {
-        processUnwantedContent();
-      } else {
-        restoreOriginalContent();
+  try {
+    if (namespace === "sync") {
+      if (changes.userQuotes)
+        availableQuotes = changes.userQuotes.newValue || defaultQuotes;
+      if (changes.todos) todos = changes.todos.newValue || [];
+      if (changes.skipWords)
+        skipWords = changes.skipWords.newValue || defaultSkipWords;
+      if (changes.enabled !== undefined) {
+        enabled = changes.enabled.newValue;
+        if (enabled) {
+          processUnwantedContent();
+        } else {
+          restoreOriginalContent();
+        }
       }
     }
+  } catch (error) {
+    console.log("Error in storage change listener:", error);
   }
 });
 
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "toggleContent") {
-    enabled = request.enabled;
-    if (enabled) {
-      processUnwantedContent();
-    } else {
-      restoreOriginalContent();
+  try {
+    if (request.action === "toggleContent") {
+      enabled = request.enabled;
+      if (enabled) {
+        processUnwantedContent();
+      } else {
+        restoreOriginalContent();
+      }
+      // Always send a response
+      sendResponse({ success: true });
     }
-    // Always send a response
-    sendResponse({ success: true });
+  } catch (error) {
+    console.log("Error in message listener:", error);
+    sendResponse({ success: false, error: error.message });
   }
   // Return true to indicate we'll send a response asynchronously
   return true;
@@ -172,10 +194,18 @@ function handleNewTodo(text, inputContainer) {
     const updatedTodos = [newTodo, ...todos];
 
     // Save and update all todo containers
-    chrome.storage.sync.set({ todos: updatedTodos }, () => {
-      todos = updatedTodos;
-      updateAllTodoContainers();
-    });
+    try {
+      chrome.storage.sync.set({ todos: updatedTodos }, () => {
+        if (chrome.runtime.lastError) {
+          console.log("Error saving todo:", chrome.runtime.lastError);
+          return;
+        }
+        todos = updatedTodos;
+        updateAllTodoContainers();
+      });
+    } catch (error) {
+      console.log("Error in handleNewTodo:", error);
+    }
 
     inputContainer.style.display = "none";
     inputContainer.querySelector("input").value = "";
@@ -183,28 +213,44 @@ function handleNewTodo(text, inputContainer) {
 }
 
 function handleTodoClick(todoId, checkbox) {
-  const updatedTodos = todos.map((todo) => {
-    if (todo.id === todoId) {
-      return { ...todo, completed: checkbox.checked };
-    }
-    return todo;
-  });
+  try {
+    const updatedTodos = todos.map((todo) => {
+      if (todo.id === todoId) {
+        return { ...todo, completed: checkbox.checked };
+      }
+      return todo;
+    });
 
-  // Save and update all todo containers
-  chrome.storage.sync.set({ todos: updatedTodos }, () => {
-    todos = updatedTodos;
-    updateAllTodoContainers();
-  });
+    // Save and update all todo containers
+    chrome.storage.sync.set({ todos: updatedTodos }, () => {
+      if (chrome.runtime.lastError) {
+        console.log("Error updating todo:", chrome.runtime.lastError);
+        return;
+      }
+      todos = updatedTodos;
+      updateAllTodoContainers();
+    });
+  } catch (error) {
+    console.log("Error in handleTodoClick:", error);
+  }
 }
 
 function handleTodoDelete(todoId) {
-  const updatedTodos = todos.filter((todo) => todo.id !== todoId);
+  try {
+    const updatedTodos = todos.filter((todo) => todo.id !== todoId);
 
-  // Save and update all todo containers
-  chrome.storage.sync.set({ todos: updatedTodos }, () => {
-    todos = updatedTodos;
-    updateAllTodoContainers();
-  });
+    // Save and update all todo containers
+    chrome.storage.sync.set({ todos: updatedTodos }, () => {
+      if (chrome.runtime.lastError) {
+        console.log("Error deleting todo:", chrome.runtime.lastError);
+        return;
+      }
+      todos = updatedTodos;
+      updateAllTodoContainers();
+    });
+  } catch (error) {
+    console.log("Error in handleTodoDelete:", error);
+  }
 }
 
 function createTodoInput() {
@@ -504,6 +550,10 @@ function initializeContentProcessor() {
     
     // Load initial state and process content accordingly
     chrome.storage.sync.get(["enabled"], (result) => {
+      if (chrome.runtime.lastError) {
+        console.log("Error loading enabled state:", chrome.runtime.lastError);
+        return;
+      }
       enabled = result.enabled === undefined ? true : result.enabled;
       if (enabled) {
         setTimeout(processUnwantedContent, 1000);
