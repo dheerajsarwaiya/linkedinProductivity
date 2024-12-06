@@ -335,8 +335,8 @@ function createContentElement() {
         padding-right: 8px;
     `;
 
-  if (contentCounter % 2 === 0 && todos.length > 0) {
-    // Todo container
+  if (contentCounter === 0 && todos.length > 0) {
+    // First content element is todo container
     element.setAttribute("data-content-type", "todo");
     element.style.backgroundColor = "#e8f3ff";
 
@@ -445,7 +445,7 @@ function createContentElement() {
     element.appendChild(addButton);
     element.appendChild(todoInput);
   } else {
-    // Quote container
+    // Quote container for all other elements
     element.setAttribute("data-content-type", "quote");
     element.style.height = "96px";
     contentContainer.style.cssText += `
@@ -499,6 +499,9 @@ function processUnwantedContent() {
 
 function initializeContentProcessor() {
   try {
+    // Reset content counter when initializing
+    contentCounter = 0;
+    
     // Load initial state and process content accordingly
     chrome.storage.sync.get(["enabled"], (result) => {
       enabled = result.enabled === undefined ? true : result.enabled;
