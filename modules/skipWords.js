@@ -29,10 +29,10 @@ window.skipWordsManager = {
             
             wordItem.innerHTML = `
                 <span>${word}</span>
-                ${!storageUtils.defaultSkipWords.includes(word) ? '<button class="delete-btn">Delete</button>' : ''}
+                <button class="delete-btn">×</button>
             `;
             
-            // Delete skip word (only for non-default words)
+            // Delete skip word
             const deleteBtn = wordItem.querySelector('.delete-btn');
             if (deleteBtn) {
                 deleteBtn.addEventListener('click', () => {
@@ -92,10 +92,6 @@ window.skipWordsManager = {
     },
 
     async removeSkipWord(word) {
-        if (storageUtils.defaultSkipWords.includes(word)) {
-            return false;
-        }
-
         const initialLength = this.skipWords.length;
         this.skipWords = this.skipWords.filter(w => w !== word);
         
