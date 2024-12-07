@@ -7,7 +7,7 @@ const defaultQuotes = [
   "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
 ];
 
-const defaultSkipWords = ["hiring", "starting"];
+const defaultSkipWords = ["hiring"];
 
 // State management
 let availableQuotes = [...defaultQuotes];
@@ -514,6 +514,17 @@ function processUnwantedContent() {
   if (!enabled) return;
 
   try {
+    // First, handle the h1 element with class "visually-hidden"
+    const feedHeader = document.querySelector('h1.visually-hidden');
+    if (feedHeader && feedHeader.textContent.trim().toLowerCase() === 'feed updates' && !feedHeader.getAttribute('data-cleaned')) {
+      contentCounter = 0; // Reset counter to ensure todo container is created
+      const todoContainer = createContentElement();
+      storeOriginalContent(feedHeader, todoContainer);
+      feedHeader.parentNode.replaceChild(todoContainer, feedHeader);
+      todoContainer.setAttribute('data-cleaned', 'true');
+    }
+
+    // Then process other content
     const selectors = [
       ".feed-shared-update-v2",
       ".feed-follows-module",
@@ -547,7 +558,7 @@ function initializeContentProcessor() {
   try {
     // Reset content counter when initializing
     contentCounter = 0;
-    
+
     // Load initial state and process content accordingly
     chrome.storage.sync.get(["enabled"], (result) => {
       if (chrome.runtime.lastError) {
