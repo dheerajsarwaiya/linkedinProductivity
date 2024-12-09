@@ -367,6 +367,7 @@ function createContentElement() {
         padding: 15px;
         margin: 8px 0;
         background-color: #f3f6f8;
+        border: 1px solid #ddd;
         border-radius: 8px;
         color: #444;
         font-size: 14px;
@@ -374,6 +375,7 @@ function createContentElement() {
         position: relative;
         min-height: 96px;
         max-height: 400px;
+      
     `;
 
   const contentContainer = document.createElement("div");
@@ -493,15 +495,15 @@ function createContentElement() {
   } else {
     // Quote container for all other elements
     element.setAttribute("data-content-type", "quote");
-    element.style.height = "96px";
+    element.style.minHeight = "96px";
     contentContainer.style.cssText += `
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-style: italic;
-            text-align: center;
-            height: 100%;
-        `;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-style: italic;
+        text-align: center;
+        height: 100%;
+      `;
     contentContainer.textContent = getRandomQuote();
   }
 
@@ -515,13 +517,17 @@ function processUnwantedContent() {
 
   try {
     // First, handle the h1 element with class "visually-hidden"
-    const feedHeader = document.querySelector('h1.visually-hidden');
-    if (feedHeader && feedHeader.textContent.trim().toLowerCase() === 'feed updates' && !feedHeader.getAttribute('data-cleaned')) {
+    const feedHeader = document.querySelector("h1.visually-hidden");
+    if (
+      feedHeader &&
+      feedHeader.textContent.trim().toLowerCase() === "feed updates" &&
+      !feedHeader.getAttribute("data-cleaned")
+    ) {
       contentCounter = 0; // Reset counter to ensure todo container is created
       const todoContainer = createContentElement();
       storeOriginalContent(feedHeader, todoContainer);
       feedHeader.parentNode.replaceChild(todoContainer, feedHeader);
-      todoContainer.setAttribute('data-cleaned', 'true');
+      todoContainer.setAttribute("data-cleaned", "true");
     }
 
     // Then process other content
